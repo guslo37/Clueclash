@@ -93,8 +93,8 @@ function pause(){
 
 function reset(){
   pause();
-  timeRed = 600;
-  timeBlue = 600;
+  timeRed = 60;
+  timeBlue = 60;
   currentTeam = null;
   statusEl.textContent = 'Juego reiniciado';
   updateDisplay();
