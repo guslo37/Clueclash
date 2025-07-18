@@ -10,8 +10,8 @@ const soundGoat = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADT
 const countdownSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM5LjEwNAAAAAAAAAAAAAAA//vQxAADBv8AAAAGAAABAAEAAAEBAAAIBwAAAAAA");
 
 // Variables de tiempo por equipo en segundos (configurable)
-let timeRed = 600; // 10 minutos
-let timeBlue = 600;
+let timeRed = 60; // 10 minutos
+let timeBlue = 60;
 
 let intervalId = null;
 let currentTeam = null; // 'red' o 'blue'
