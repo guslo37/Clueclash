@@ -1,5 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head><title>ClueClash Clock</title></head>
-<body><h1>ClueClash Clock</h1></body>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ClueClash: Clock Wars</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <h1>ClueClash: Clock Wars</h1>
+    <div class="clocks">
+      <div id="team-red" class="clock team-red">
+        <h2>Equipo Rojo</h2>
+        <div class="time" id="time-red">00:00</div>
+      </div>
+      <div id="team-blue" class="clock team-blue">
+        <h2>Equipo Azul</h2>
+        <div class="time" id="time-blue">00:00</div>
+      </div>
+    </div>
+    <div id="status"></div>
+    <div id="controls">
+      <button id="start-btn">Iniciar</button>
+      <button id="pause-btn">Pausar</button>
+      <button id="reset-btn">Reiniciar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
