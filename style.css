@@ -1,70 +1,80 @@
 body {
-  background: #121212;
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
   margin: 0;
-  padding: 1rem;
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
-  font-family: 'Impact', sans-serif;
-}
-
-.clocks {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 2rem;
-}
-
-.clock {
-  background: #222;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  width: 45%;
-  box-shadow: 0 0 15px rgba(0,0,0,0.7);
-}
-
-.team-red {
-  border: 4px solid #E63946;
-}
-
-.team-blue {
-  border: 4px solid #1D3557;
-}
-
-.clock h2 {
-  margin-bottom: 0.5rem;
-}
-
-.time {
-  font-size: 4rem;
-  font-weight: 700;
-  font-family: 'Courier New', Courier, monospace;
-  letter-spacing: 0.1em;
-}
-
-#controls button {
-  background-color: #457B9D;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  margin: 0 0.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #111;
   color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+h1, h2 {
+  margin-bottom: 1rem;
+}
+
+button {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  margin: 0.5rem;
   font-size: 1.2rem;
-  border-radius: 8px;
+  border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-#controls button:hover {
-  background-color: #1D3557;
+button:hover {
+  background-color: #555;
 }
 
-#status {
-  margin-bottom: 1rem;
-  font-weight: 600;
-  font-size: 1.2rem;
+.timer {
+  font-size: 5rem;
+  font-weight: bold;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  width: 80%;
+  border-radius: 25px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.red {
+  background-color: #c62828;
+  color: white;
+}
+
+.blue {
+  background-color: #1565c0;
+  color: white;
+}
+
+#toggle-sound {
+  font-size: 2rem;
+  margin-top: 2rem;
+  background-color: #444;
+}
+
+input[type="number"] {
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  width: 80px;
+  margin: 1rem;
+  border-radius: 10px;
+  border: none;
+  text-align: center;
+}
+
+#role-selection {
+  margin-top: 3rem;
+}
+
+@media (max-width: 600px) {
+  .timer {
+    font-size: 3rem;
+    padding: 1rem;
+  }
+
+  button {
+    width: 90%;
+    font-size: 1rem;
+  }
 }
