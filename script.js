@@ -1,141 +1,148 @@
-let role = null;
-let timerRed = 0;
-let timerBlue = 0;
-let activeTeam = null;
-let interval = null;
+let isRemote = false;
+let currentTurn = null;
+let timers = { red: 0, blue: 0 };
+let intervalId = null;
 let soundsEnabled = true;
+let isFinalCountdown = false;
 
-const soundSwitch = document.getElementById("sound-switch");
-const soundGoat = document.getElementById("sound-goat");
-const soundTick = document.getElementById("sound-tick");
+const socket = new WebSocket("wss://clue-clash-server.onrender.com");
 
-window.setRole = function(selectedRole) {
-  role = selectedRole;
+// Elementos de la interfaz
+const redTimer = document.getElementById("red-timer");
+const blueTimer = document.getElementById("blue-timer");
+const redBar = document.getElementById("red-bar");
+const blueBar = document.getElementById("blue-bar");
+const turnIndicator = document.getElementById("turn-indicator");
+const finalCountdownSound = document.getElementById("final-countdown");
+const timeoutSound = document.getElementById("timeout-sound");
+const switchSound = document.getElementById("switch-sound");
 
-  document.getElementById("role-selection").style.display = "none";
+// Pantalla de rol
+const roleSelector = document.getElementById("role-selector");
+const screenContainer = document.getElementById("screen-container");
+const remoteContainer = document.getElementById("remote-container");
 
-  if (role === "screen") {
-    document.getElementById("screen-view").style.display = "block";
-    activateSoundsOnInteraction();
-  } else if (role === "remote") {
-    document.getElementById("remote-view").style.display = "block";
-  }
-};
+// Control remoto
+const redTimeInput = document.getElementById("red-time");
+const blueTimeInput = document.getElementById("blue-time");
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("role-selection").style.display = "block";
-  document.getElementById("screen-view").style.display = "none";
-  document.getElementById("remote-view").style.display = "none";
-});
-
-function activateSoundsOnInteraction() {
-  document.body.addEventListener("click", () => {
-    [soundSwitch, soundGoat, soundTick].forEach(s => {
-      s.play().catch(() => {});
-      s.pause();
-      s.currentTime = 0;
-    });
-  }, { once: true });
-}
-
-function startGame() {
-  const minutes = parseInt(document.getElementById("time-input").value);
-  if (isNaN(minutes) || minutes <= 0) {
-    alert("Por favor ingresa un tiempo válido (minutos).");
-    return;
-  }
-
-  timerRed = minutes * 60;
-  timerBlue = minutes * 60;
-  activeTeam = "red";
-  updateTimers();
-  playSound("switch");
-
-  if (interval) clearInterval(interval);
-  interval = setInterval(tick, 1000);
-}
-
-function tick() {
-  if (activeTeam === "red") {
-    timerRed--;
-    if (timerRed <= 0) {
-      timerRed = 0;
-      endTurn();
-    }
-  } else if (activeTeam === "blue") {
-    timerBlue--;
-    if (timerBlue <= 0) {
-      timerBlue = 0;
-      endTurn();
-    }
-  }
-  updateTimers();
-  playTickSoundIfNeeded();
-}
-
-function playTickSoundIfNeeded() {
-  let timeLeft = activeTeam === "red" ? timerRed : timerBlue;
-  if (timeLeft <= 30 && timeLeft > 0) {
-    playSound("tick");
+function playSound(sound) {
+  if (soundsEnabled && sound) {
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
   }
 }
 
-function endTurn() {
-  playSound("goat");
-  clearInterval(interval);
-  interval = null;
-  alert(`¡Se acabó el tiempo del equipo ${activeTeam === "red" ? "Rojo" : "Azul"}!`);
-}
-
-function switchTurn() {
-  if (!activeTeam) return;
-  activeTeam = activeTeam === "red" ? "blue" : "red";
-  playSound("switch");
-  updateTimers();
-}
-
-function resetGame() {
-  clearInterval(interval);
-  interval = null;
-  timerRed = 0;
-  timerBlue = 0;
-  activeTeam = null;
-  updateTimers();
-}
-
-function updateTimers() {
-  const redEl = document.getElementById("team-red");
-  const blueEl = document.getElementById("team-blue");
-
-  redEl.textContent = formatTime(timerRed);
-  blueEl.textContent = formatTime(timerBlue);
-
-  redEl.style.backgroundColor = activeTeam === "red" ? "#c62828" : "#666";
-  blueEl.style.backgroundColor = activeTeam === "blue" ? "#1565c0" : "#666";
+function updateDisplay() {
+  redTimer.textContent = formatTime(timers.red);
+  blueTimer.textContent = formatTime(timers.blue);
+  const total = timers.red + timers.blue;
+  const redPercent = total ? (timers.red / total) * 100 : 50;
+  redBar.style.width = `${redPercent}%`;
+  blueBar.style.width = `${100 - redPercent}%`;
 }
 
 function formatTime(seconds) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
 
-function toggleSound() {
-  soundsEnabled = !soundsEnabled;
-  alert(`Sonidos ${soundsEnabled ? "activados" : "silenciados"}`);
+function startTurn(team) {
+  stopTimer();
+  currentTurn = team;
+  turnIndicator.className = team;
+  intervalId = setInterval(() => {
+    if (timers[team] > 0) {
+      timers[team]--;
+      updateDisplay();
+
+      if (timers[team] === 30) {
+        isFinalCountdown = true;
+      }
+
+      if (isFinalCountdown && timers[team] <= 30) {
+        playSound(finalCountdownSound);
+      }
+    } else {
+      stopTimer();
+      playSound(timeoutSound);
+    }
+  }, 1000);
+  playSound(switchSound);
+  updateDisplay();
 }
 
-function playSound(type) {
-  if (!soundsEnabled) return;
-  switch (type) {
+function stopTimer() {
+  clearInterval(intervalId);
+  isFinalCountdown = false;
+}
+
+function handleRemoteAction(action) {
+  switch (action.type) {
+    case "start":
+      timers = { red: action.red, blue: action.blue };
+      startTurn("red");
+      break;
     case "switch":
-      soundSwitch.play().catch(() => {});
+      startTurn(currentTurn === "red" ? "blue" : "red");
       break;
-    case "goat":
-      soundGoat.play().catch(() => {});
+    case "reset":
+      timers = { red: action.red, blue: action.blue };
+      currentTurn = null;
+      stopTimer();
+      updateDisplay();
       break;
-    case "tick":
-      soundTick.play().catch(() => {});
+    case "sound":
+      soundsEnabled = action.enabled;
       break;
   }
 }
+
+socket.addEventListener("open", () => {
+  console.log("Conectado al servidor WebSocket");
+});
+
+socket.addEventListener("message", (event) => {
+  const data = JSON.parse(event.data);
+  if (!isRemote) {
+    handleRemoteAction(data);
+  }
+});
+
+// --- Interfaz control remoto ---
+document.getElementById("start-btn").addEventListener("click", () => {
+  const red = parseInt(redTimeInput.value, 10) * 60 || 180;
+  const blue = parseInt(blueTimeInput.value, 10) * 60 || 180;
+  socket.send(JSON.stringify({ type: "start", red, blue }));
+});
+
+document.getElementById("switch-btn").addEventListener("click", () => {
+  socket.send(JSON.stringify({ type: "switch" }));
+});
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  const red = parseInt(redTimeInput.value, 10) * 60 || 180;
+  const blue = parseInt(blueTimeInput.value, 10) * 60 || 180;
+  socket.send(JSON.stringify({ type: "reset", red, blue }));
+});
+
+document.getElementById("sound-toggle").addEventListener("change", (e) => {
+  const enabled = e.target.checked;
+  socket.send(JSON.stringify({ type: "sound", enabled }));
+});
+
+// --- Selector de rol ---
+document.getElementById("screen-btn").addEventListener("click", () => {
+  isRemote = false;
+  roleSelector.style.display = "none";
+  screenContainer.style.display = "block";
+});
+
+document.getElementById("remote-btn").addEventListener("click", () => {
+  isRemote = true;
+  roleSelector.style.display = "none";
+  remoteContainer.style.display = "block";
+});
