@@ -1,107 +1,93 @@
-// Sonidos embebidos en base64 (pequeños y comprimidos)
+let role = null;
+let timerRed = 0;
+let timerBlue = 0;
+let activeTeam = null;
+let interval = null;
+let soundsEnabled = true;
 
-// Bip suave (cambio de turno)
-const soundTurn = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM5LjEwNAAAAAAAAAAAAAAA//tQxAADBv8AAAAGAAABAAEAAAEBAAAIBwAAAAAA");
+const sounds = {
+  switch: new Audio("sounds/switch.mp3"),
+  end: new Audio("sounds/goat.mp3"),
+  tick: new Audio("sounds/tick.mp3"),
+};
 
-// Sonido cabra (fin de tiempo)
-const soundGoat = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM5LjEwNAAAAAAAAAAAAAAA//uQxAADBv8AAAAGAAABAAEAAAEBAAAIBwAAAAAA");
-
-// Sonido para últimos 30 segundos (mismo sonido repetido)
-const countdownSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM5LjEwNAAAAAAAAAAAAAAA//vQxAADBv8AAAAGAAABAAEAAAEBAAAIBwAAAAAA");
-
-// Variables de tiempo por equipo en segundos (configurable)
-let timeRed = 60; // 10 minutos
-let timeBlue = 60;
-
-let intervalId = null;
-let currentTeam = null; // 'red' o 'blue'
-let isPaused = true;
-
-const timeRedEl = document.getElementById('time-red');
-const timeBlueEl = document.getElementById('time-blue');
-const statusEl = document.getElementById('status');
-const startBtn = document.getElementById('start-btn');
-const pauseBtn = document.getElementById('pause-btn');
-const resetBtn = document.getElementById('reset-btn');
-
-// Formatear tiempo mm:ss
-function formatTime(seconds){
-  const m = Math.floor(seconds/60).toString().padStart(2,'0');
-  const s = (seconds%60).toString().padStart(2,'0');
-  return `${m}:${s}`;
-}
-
-function updateDisplay(){
-  timeRedEl.textContent = formatTime(timeRed);
-  timeBlueEl.textContent = formatTime(timeBlue);
-}
-
-function changeTurn(){
-  if(currentTeam === 'red'){
-    currentTeam = 'blue';
+document.addEventListener("DOMContentLoaded", () => {
+  if (!sessionStorage.getItem("role")) {
+    const choice = confirm("¿Usar este dispositivo como PANTALLA?\nPresiona 'Aceptar' para Pantalla, 'Cancelar' para Control Remoto.");
+    role = choice ? "screen" : "remote";
+    sessionStorage.setItem("role", role);
   } else {
-    currentTeam = 'red';
+    role = sessionStorage.getItem("role");
   }
-  soundTurn.play();
-  statusEl.textContent = `Turno del equipo ${currentTeam === 'red' ? 'Rojo' : 'Azul'}`;
+
+  if (role === "screen") initScreen();
+  else initRemote();
+});
+
+function initScreen() {
+  document.body.innerHTML = `
+    <div id="screen">
+      <h1>ClueClash Clock Wars</h1>
+      <div id="timers">
+        <div id="red" class="team">00:00</div>
+        <div id="blue" class="team">00:00</div>
+      </div>
+      <button onclick="toggleSound()">🔊</button>
+    </div>
+  `;
+  document.body.addEventListener("click", () => {
+    // Activar sonidos en Safari
+    Object.values(sounds).forEach(s => s.play().catch(() => {}));
+  }, { once: true });
+
+  // Simulación de conexión WebSocket entre dispositivos
+  window.addEventListener("message", (e) => {
+    const { type, payload } = e.data;
+    if (type === "start") startTimers(payload);
+    if (type === "switch") switchTurn();
+    if (type === "reset") resetTimers();
+  });
 }
 
-function tick(){
-  if(isPaused || !currentTeam) return;
-
-  if(currentTeam === 'red'){
-    if(timeRed > 0){
-      timeRed--;
-      if(timeRed <= 30 && timeRed > 0){
-        countdownSound.play();
-      } else if(timeRed === 0){
-        soundGoat.play();
-        clearInterval(intervalId);
-        statusEl.textContent = '¡El tiempo del equipo Rojo terminó!';
-      }
-    }
-  } else if(currentTeam === 'blue'){
-    if(timeBlue > 0){
-      timeBlue--;
-      if(timeBlue <= 30 && timeBlue > 0){
-        countdownSound.play();
-      } else if(timeBlue === 0){
-        soundGoat.play();
-        clearInterval(intervalId);
-        statusEl.textContent = '¡El tiempo del equipo Azul terminó!';
-      }
-    }
-  }
-  updateDisplay();
+function initRemote() {
+  document.body.innerHTML = `
+    <div id="remote">
+      <h2>Control Remoto</h2>
+      <label>Tiempo por equipo (segundos): <input id="timeInput" type="number" value="60" /></label>
+      <button onclick="sendStart()">Iniciar</button>
+      <button onclick="sendSwitch()">Cambiar turno</button>
+      <button onclick="sendReset()">Reiniciar</button>
+    </div>
+  `;
 }
 
-function start(){
-  if(!currentTeam){
-    currentTeam = 'red'; // Empieza rojo
-    statusEl.textContent = 'Turno del equipo Rojo';
-  }
-  if(isPaused){
-    isPaused = false;
-    intervalId = setInterval(tick, 1000);
-  }
+function sendStart() {
+  const time = parseInt(document.getElementById("timeInput").value);
+  parent.postMessage({ type: "start", payload: time }, "*");
+}
+function sendSwitch() {
+  parent.postMessage({ type: "switch" }, "*");
+}
+function sendReset() {
+  parent.postMessage({ type: "reset" }, "*");
 }
 
-function pause(){
-  isPaused = true;
-  clearInterval(intervalId);
+function startTimers(time) {
+  timerRed = time;
+  timerBlue = time;
+  activeTeam = "red";
+  updateTimers();
+  playSound("switch");
+  if (interval) clearInterval(interval);
+  interval = setInterval(() => tick(), 1000);
 }
 
-function reset(){
-  pause();
-  timeRed = 60;
-  timeBlue = 60;
-  currentTeam = null;
-  statusEl.textContent = 'Juego reiniciado';
-  updateDisplay();
-}
+function tick() {
+  if (activeTeam === "red") timerRed--;
+  else timerBlue--;
 
-startBtn.addEventListener('click', start);
-pauseBtn.addEventListener('click', pause);
-resetBtn.addEventListener('click', reset);
+  updateTimers();
 
-updateDisplay();
+  const timeLeft = activeTeam === "red" ? timerRed : timerBlue;
+
+  if (timeLeft
