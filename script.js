@@ -9,16 +9,8 @@ const soundSwitch = document.getElementById("sound-switch");
 const soundGoat = document.getElementById("sound-goat");
 const soundTick = document.getElementById("sound-tick");
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Mostrar selector de rol
-  document.getElementById("role-selection").style.display = "block";
-  document.getElementById("screen-view").style.display = "none";
-  document.getElementById("remote-view").style.display = "none";
-});
-
-function setRole(selectedRole) {
+window.setRole = function(selectedRole) {
   role = selectedRole;
-  sessionStorage.setItem("role", role);
 
   document.getElementById("role-selection").style.display = "none";
 
@@ -28,10 +20,15 @@ function setRole(selectedRole) {
   } else if (role === "remote") {
     document.getElementById("remote-view").style.display = "block";
   }
-}
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("role-selection").style.display = "block";
+  document.getElementById("screen-view").style.display = "none";
+  document.getElementById("remote-view").style.display = "none";
+});
 
 function activateSoundsOnInteraction() {
-  // Safari requiere interacción para activar audio
   document.body.addEventListener("click", () => {
     [soundSwitch, soundGoat, soundTick].forEach(s => {
       s.play().catch(() => {});
