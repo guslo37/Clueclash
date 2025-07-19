@@ -5,7 +5,7 @@ let intervalId = null;
 let soundsEnabled = true;
 let isFinalCountdown = false;
 
-const socket = new WebSocket("wss://clue-clash-server.onrender.com");
+window.socket = new WebSocket("wss://clueclash-server.onrender.com/ws");
 
 // Elementos de la interfaz
 const redTimer = document.getElementById("red-timer");
