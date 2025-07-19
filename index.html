@@ -2,42 +2,59 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ClueClash Clock Wars</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Selector de rol -->
-  <div id="role-selection" style="display: block;">
-    <h1>¿Cómo deseas usar este dispositivo?</h1>
-    <button onclick="setRole('screen')">📺 Usar como Pantalla</button>
-    <button onclick="setRole('remote')">📱 Usar como Control Remoto</button>
+  <div id="role-selector">
+    <h2>¿Cómo quieres usar este dispositivo?</h2>
+    <button id="screen-btn">Usar como Pantalla</button>
+    <button id="remote-btn">Usar como Control Remoto</button>
   </div>
 
-  <!-- Vista Pantalla -->
-  <div id="screen-view" style="display:none;">
-    <div id="team-red" class="timer red">03:00</div>
-    <div id="team-blue" class="timer blue">03:00</div>
-    <button id="toggle-sound" onclick="toggleSound()">🔊</button>
+  <!-- Pantalla principal -->
+  <div id="screen-container" style="display: none">
+    <div id="turn-indicator" class="none"></div>
+    <div class="timers">
+      <div class="team red">
+        <div id="red-timer">03:00</div>
+      </div>
+      <div class="team blue">
+        <div id="blue-timer">03:00</div>
+      </div>
+    </div>
+    <div class="bar">
+      <div id="red-bar" class="bar-segment red"></div>
+      <div id="blue-bar" class="bar-segment blue"></div>
+    </div>
   </div>
 
-  <!-- Vista Control Remoto -->
-  <div id="remote-view" style="display:none;">
+  <!-- Control remoto -->
+  <div id="remote-container" style="display: none">
     <h2>Control Remoto</h2>
-    <label for="time-input">Tiempo por equipo (minutos):</label>
-    <input type="number" id="time-input" min="1" max="10" value="3" />
-    <br />
-    <button onclick="startGame()">Iniciar Juego</button>
-    <button onclick="switchTurn()">Cambiar Turno</button>
-    <button onclick="resetGame()">Reiniciar</button>
+    <label>Tiempo equipo rojo (min):
+      <input type="number" id="red-time" value="3" />
+    </label>
+    <label>Tiempo equipo azul (min):
+      <input type="number" id="blue-time" value="3" />
+    </label>
+    <div class="controls">
+      <button id="start-btn">Iniciar</button>
+      <button id="switch-btn">Cambiar Turno</button>
+      <button id="reset-btn">Reiniciar</button>
+    </div>
+    <label>
+      <input type="checkbox" id="sound-toggle" checked />
+      Sonidos activados
+    </label>
   </div>
 
-  <!-- Sonidos -->
-  <audio id="sound-switch" src="sounds/switch.mp3"></audio>
-  <audio id="sound-goat" src="sounds/goat.mp3"></audio>
-  <audio id="sound-tick" src="sounds/tick.mp3"></audio>
+  <!-- Audios -->
+  <audio id="final-countdown" src="final.mp3" preload="auto"></audio>
+  <audio id="timeout-sound" src="timeout.mp3" preload="auto"></audio>
+  <audio id="switch-sound" src="switch.mp3" preload="auto"></audio>
 
-  <script src="script.js" defer></script>
+  <script src="script.js"></script>
 </body>
 </html>
