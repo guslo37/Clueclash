@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ClueClash Clock Wars</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -16,28 +16,13 @@
   </div>
 
   <!-- Vista Pantalla -->
-  <div id="screen-view" style="display: none;">
+  <div id="screen-view" style="display:none;">
     <div id="team-red" class="timer red">03:00</div>
     <div id="team-blue" class="timer blue">03:00</div>
     <button id="toggle-sound">🔊</button>
   </div>
 
   <!-- Vista Control Remoto -->
-  <div id="remote-view" style="display: none;">
+  <div id="remote-view" style="display:none;">
     <h2>Control Remoto</h2>
-    <label for="time-input">Tiempo por equipo (minutos):</label>
-    <input type="number" id="time-input" min="1" max="10" value="3" />
-    <button onclick="startGame()">Iniciar Juego</button>
-    <button onclick="switchTurn()">Cambiar Turno</button>
-    <button onclick="resetGame()">Reiniciar</button>
-    <button onclick="toggleSound()">🔊/🔇</button>
-  </div>
-
-  <!-- Archivos de sonido -->
-  <audio id="sound-switch" src="sounds/switch.mp3"></audio>
-  <audio id="sound-goat" src="sounds/goat.mp3"></audio>
-  <audio id="sound-tick" src="sounds/tick.mp3"></audio>
-
-  <script src="script.js"></script>
-</body>
-</html>
+    <label for="time-input">Tiempo por equipo (m
